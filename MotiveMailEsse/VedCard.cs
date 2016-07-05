@@ -113,19 +113,18 @@ namespace MotiveMailEssay
                     dgvVedPersonList.Columns.Insert(5, dgvColEssay);
                 }
             }
-        }           
+        }
 
         private void FillGrid()
         {
             if (IsPortfolioAnonymPartMotivLetter || IsPortfolioAnonymPartEssay)
             {
-                string query = @"SELECT [ExamsVedId]
-                                    , [PersonId] 
-                                    , "+(isLoad ? "FIO as 'Фамилия'":"[PersonVedNumber] as 'Рег.номер'")
-                               +@", Mark as 'Оценка за м.письмо' , OralMark as 'Оценка за эссе'
-                               FROM [ed].[ExamsVedHistory]
-                               join ed.extPerson on extPerson.Id = PersonId
-                               WHERE ExamsVedId = @Id";
+                string query = @"SELECT [ExamsVedId], [PersonId], " 
+                    + (isLoad ? "FIO as 'Фамилия'":"[PersonVedNumber] as 'Рег.номер'")
+                    + @", Mark as 'Оценка за м.письмо' , OralMark as 'Оценка за эссе'
+    FROM [ed].[ExamsVedHistory]
+    join ed.extPerson on extPerson.Id = PersonId
+    WHERE ExamsVedId = @Id";
                query = @"
 SELECT ExamsVedId
 , PersonId
@@ -144,22 +143,24 @@ left join ed.ExamsVedHistoryMark Marks2 on History.Id = Marks2.ExamsVedHistoryId
 left join ed.ExamsVedMarkDetails Details2 on Details2.ExamsVedHistoryMarkId = Marks2.Id and Details2.ExaminerName like '%" + Util.GetUserNameRectorat() + @"%'" ) : "")
 
 +@"WHERE ExamsVedId = @Id" ;
+                
                 Dictionary<string, object> dic = new Dictionary<string, object>();
                 dic.AddVal("@Id", _VedId);
+                
                 while (dgvVedPersonList.Columns.Count > 0)
                 {
                     dgvVedPersonList.Columns.Remove(dgvVedPersonList.Columns[0]);
                 }
+                
                 DataTable tbl = Util.BDC.GetDataTable(query, dic);
                 dgvVedPersonList.DataSource = tbl;
+                
                 if (dgvVedPersonList.Columns.Contains("Фамилия"))
-                {
                     dgvVedPersonList.Columns["Фамилия"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                }
+                
                 if (dgvVedPersonList.Columns.Contains("Рег.номер"))
-                {
                     dgvVedPersonList.Columns["Рег.номер"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                }
+                
                 dgvVedPersonList.Columns["ExamsVedId"].Visible = false;
                 dgvVedPersonList.Columns["PersonId"].Visible = false;
             }
@@ -181,18 +182,21 @@ join ed.extPerson on extPerson.Id = History.PersonId
 left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=5
 left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Marks.Id and Details.ExaminerName like '%" + Util.GetUserNameRectorat() + @"%' "
 + @"WHERE ExamsVedId = @Id";
+                
                 Dictionary<string, object> dic = new Dictionary<string, object>();
                 dic.AddVal("@Id", _VedId);
+                
                 DataTable tbl = Util.BDC.GetDataTable(query, dic);
                 while (dgvVedPersonList.Columns.Count > 0)
                 {
                     dgvVedPersonList.Columns.Remove(dgvVedPersonList.Columns[0]);
                 }
+
                 dgvVedPersonList.DataSource = tbl;
+                
                 if (dgvVedPersonList.Columns.Contains("ФИО"))
-                {
                     dgvVedPersonList.Columns["ФИО"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                }
+                
                 dgvVedPersonList.Columns["ExamsVedId"].Visible = false;
                 dgvVedPersonList.Columns["PersonId"].Visible = false;
             } 
