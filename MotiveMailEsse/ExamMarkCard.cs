@@ -62,6 +62,12 @@ namespace MotiveMailEssay
                         _itype = 5;
                         break;
                     }
+                case CardType.PhilosophyEssay:
+                    {
+                        this.Text = "Реферат по философии";
+                        _itype = 6;
+                        break;
+                    }
             }
             FillCombos();
             GdvAddColumns();
@@ -290,6 +296,16 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
                     filters += ") ";
                 filters += "and NOT ( FileName LIKE '%мотив%' OR FileName LIKE '%motiv%' OR Comment LIKE '%мотив%' OR Comment LIKE '%motiv%' )";
 
+            }
+            else if (_type == CardType.PhilosophyEssay)
+            {
+                filters +=
+@" and (
+                           FileName LIKE '%phil_essay%' OR
+                          Comment LIKE '%философ%' 
+                          ";
+                 
+                filters += ") ";
             }
             Dictionary<string, object> dic = new Dictionary<string, object>();
 

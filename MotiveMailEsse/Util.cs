@@ -147,6 +147,7 @@ namespace MotiveMailEssay
         Uknown,
         Motivation,
         Essay,
-        Portfolio
+        Portfolio,
+        PhilosophyEssay
     }
 }

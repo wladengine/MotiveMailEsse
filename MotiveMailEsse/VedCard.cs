@@ -20,6 +20,7 @@ namespace MotiveMailEssay
         private bool IsPortfolioAnonymPartMotivLetter;
         private bool IsPortfolioAnonymPartEssay;
         private bool IsPortfolioCommonPart;
+        private bool IsPhilosophyEssay;
 
         public VedCard(Guid id)
         {
@@ -48,6 +49,8 @@ namespace MotiveMailEssay
                                 where ST.ExamsVedId = extExamsVed.Id and MarkTypeId = 4)) then 1 else 0 end as IsPortfolioAnonymPartEssay
                                 , case when (EXISTS (select * from ed.ExamsVedSelectedMarkType ST
                                 where ST.ExamsVedId = extExamsVed.Id and MarkTypeId = 5)) then 1 else 0 end as IsPortfolioCommonPart  
+                                , case when (EXISTS (select * from ed.ExamsVedSelectedMarkType ST
+                                where ST.ExamsVedId = extExamsVed.Id and MarkTypeId = 6)) then 1 else 0 end as IsPhilosophyEssay  
                                   FROM ed.extExamsVed  
                                   join ed.Exam on extExamsVed.ExamId = Exam.Id
                                   WHERE extExamsVed.Id = @Id";
@@ -62,11 +65,11 @@ namespace MotiveMailEssay
             tbVedNum.Text = r.Field<int>("Number").ToString();
             tbExamDate.Text = r.Field<DateTime>("Date").ToString();
             tbExamName.Text = r.Field<String>("ExamName");
+            
             IsPortfolioCommonPart = r.Field<int>("IsPortfolioCommonPart")==1;
-
             IsPortfolioAnonymPartMotivLetter = r.Field<int>("IsPortfolioAnonymPartMotivLetter")==1;
             IsPortfolioAnonymPartEssay = r.Field<int>("IsPortfolioAnonymPartEssay")==1;
-
+            IsPhilosophyEssay = r.Field<int>("IsPhilosophyEssay") == 1;
 
         }
         private void DgvAddColumns()
@@ -80,8 +83,17 @@ namespace MotiveMailEssay
                 dgvColMail.UseColumnTextForButtonValue = true;
                 dgvVedPersonList.Columns.Insert(3, dgvColMail);
             }
-            else
+            else if (IsPhilosophyEssay)
             {
+                DataGridViewButtonColumn dgvColMail = new DataGridViewButtonColumn();
+                dgvColMail.HeaderText = "Оценка";
+                dgvColMail.Name = "PhilosophyEssay";
+                dgvColMail.Text = "Просмотр";
+                dgvColMail.UseColumnTextForButtonValue = true;
+                dgvVedPersonList.Columns.Insert(3, dgvColMail);
+            }
+            else
+            { 
                 if (IsPortfolioAnonymPartMotivLetter)
                 {
                     DataGridViewButtonColumn dgvColMail = new DataGridViewButtonColumn();
@@ -184,6 +196,31 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
                 dgvVedPersonList.Columns["ExamsVedId"].Visible = false;
                 dgvVedPersonList.Columns["PersonId"].Visible = false;
             } 
+            else if (IsPhilosophyEssay)
+            {
+                string query = @"
+SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
+Details.MarkValue as 'Оценка за эссе по философии' 
+FROM ed.ExamsVedHistory History 
+join ed.extPerson on extPerson.Id = History.PersonId
+left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=6
+left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Marks.Id and Details.ExaminerName like '%" + Util.GetUserNameRectorat() + @"%' "
++ @"WHERE ExamsVedId = @Id";
+                Dictionary<string, object> dic = new Dictionary<string, object>();
+                dic.AddVal("@Id", _VedId);
+                DataTable tbl = Util.BDC.GetDataTable(query, dic);
+                while (dgvVedPersonList.Columns.Count > 0)
+                {
+                    dgvVedPersonList.Columns.Remove(dgvVedPersonList.Columns[0]);
+                }
+                dgvVedPersonList.DataSource = tbl;
+                if (dgvVedPersonList.Columns.Contains("ФИО"))
+                {
+                    dgvVedPersonList.Columns["ФИО"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                }
+                dgvVedPersonList.Columns["ExamsVedId"].Visible = false;
+                dgvVedPersonList.Columns["PersonId"].Visible = false;
+            } 
             DgvAddColumns();
         }
 
@@ -216,7 +253,21 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
                     Guid id = (Guid)dgvVedPersonList.Rows[row].Cells["PersonId"].Value;
                     CardType type = CardType.Uknown;
                     if (e.ColumnIndex == dgvVedPersonList.Columns["Portfolio"].Index)
-                        type = CardType.Portfolio; 
+                        type = CardType.Portfolio;
+                    Util.OpenExamMarkCard(this, id, _VedId, type, row, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
+                }
+            }
+            else if (IsPhilosophyEssay)
+            {
+                if (e.RowIndex < 0 || (e.ColumnIndex != dgvVedPersonList.Columns["PhilosophyEssay"].Index))
+                    return;
+                else
+                {
+                    int row = this.dgvVedPersonList.CurrentCell.RowIndex;
+                    Guid id = (Guid)dgvVedPersonList.Rows[row].Cells["PersonId"].Value;
+                    CardType type = CardType.Uknown;
+                    if (e.ColumnIndex == dgvVedPersonList.Columns["PhilosophyEssay"].Index)
+                        type = CardType.PhilosophyEssay;
                     Util.OpenExamMarkCard(this, id, _VedId, type, row, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
                 }
             }
