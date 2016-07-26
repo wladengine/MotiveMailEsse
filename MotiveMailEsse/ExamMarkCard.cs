@@ -17,9 +17,9 @@ namespace MotiveMailEssay
         public OpenHandler _handlerOpenPrev;
 
         private Guid gMarkDetailsId;
-        private bool IsNew;
         private Guid gHistoryMarkId;
 
+        public bool isClosed;
         private string _ExaminerName;
         private string _faculty;
         private Guid _PersonId;
@@ -33,15 +33,22 @@ namespace MotiveMailEssay
         private string IsApprovedNULL= "Не проверялось";
         private string IsApprovedFalse = "Отклонено";
         private bool IsVisible = true;
+        private bool isMain;
 
-        public ExamMarkCard(Guid id, Guid VedId, CardType type, int row)
+        public ExamMarkCard(Guid id, Guid VedId, CardType type, int row, bool _isMain, UpdateHandler _hUp, OpenHandler _hOpNext, OpenHandler _hOpPrev)
         {
             InitializeComponent();
+            isClosed = false;
             _PersonId = id;
             _VedomostId = VedId;
             ownerRowIndex = row;
             _type = type;
+            isMain = _isMain;
             _ExaminerName = Util.GetUserName();
+            this.MdiParent = Util.MainForm;
+            _handlerUpdate = _hUp;
+                _handlerOpenNext = _hOpNext;
+                _handlerOpenPrev = _hOpPrev;
             switch (_type)
             {
                 case CardType.Motivation:
@@ -75,7 +82,8 @@ namespace MotiveMailEssay
         private void GetId()
         {
             string squery = @"select
-                                Mark.Id
+                                Mark.Id,
+                                ISNULL (MarkIsChecked, 0) as MarkIsChecked
                                 from ed.ExamsVedHistoryMark Mark  
                                 join ed.ExamsVedHistory History on Mark.ExamsVedHistoryId = History.Id
                                 where History.PersonId = @PersonId  and History.ExamsVedId = @VedId and Mark.ExamsVedMarkTypeId = @ExamsVedMarkTypeId";
@@ -83,11 +91,12 @@ namespace MotiveMailEssay
             if (tbl_h.Rows.Count > 0)
             {
                 gHistoryMarkId = tbl_h.Rows[0].Field<Guid>("Id");
-                IsNew = false;
+                
             }
             else
             {
                 MessageBox.Show("Ошибка! Отсутствует запись в таблице ExamsVedHistoryMark. ", "Ошибка!");
+                this.isClosed = true;
                 return;
             }
 
@@ -100,12 +109,51 @@ namespace MotiveMailEssay
             if (tbl_f.Rows.Count>0)
             {
                 gMarkDetailsId = tbl_f.Rows[0].Field<Guid>("Id");
-                IsNew = false;
             }
             else
             {
-                gMarkDetailsId = Guid.NewGuid();
-                IsNew = true;
+                squery = @"select Details.Id
+                           from ed.ExamsVedMarkDetails Details
+                           join ed.ExamsVedHistoryMark Mark on Details.ExamsVedHistoryMarkId = Mark.Id
+                           where Mark.Id = @HistoryMarkId ";
+                DataTable tbl_cnt = Util.BDC.GetDataTable(squery, new Dictionary<string, object> {{ "@HistoryMarkId", gHistoryMarkId } });
+                squery = @" select  ISNULL([ExaminerCount],0) from ed.ExamsVed where Id=@VedId ";
+                int ExaminerCount = int.Parse(Util.BDC.GetValue(squery, new Dictionary<string, object>() { { "@VedId", _VedomostId } }).ToString());
+                // Например три или более записей создано, то закрыть доступ
+                if (tbl_cnt.Rows.Count >= ExaminerCount && !isMain)
+                {
+                    if (DialogResult.Yes == MessageBox.Show("Эту работу уже проверяет максимальное количество проверяющих, открыть следующую работу?","Ограничение количества проверяющих", MessageBoxButtons.YesNo))
+                    {
+                        ShowNext();
+                    }
+                    else
+                    {
+                        this.isClosed = true;
+                        this.Close();
+                    }
+                }
+                else  
+                {
+                    if (!isMain)
+                    {
+                        bool MarkIsChecked = tbl_h.Rows[0].Field<bool>("MarkIsChecked");
+                        if (MarkIsChecked)
+                        {
+                            DialogResult dlg = MessageBox.Show("Данная работа уже была проверена главным проверяющим, оценка утверждена, работа не подлежит проверке. Открыть следующую работу?", "Ошибка!", MessageBoxButtons.YesNo);
+                            if (dlg == System.Windows.Forms.DialogResult.Yes)
+                                ShowNext();
+                            else
+                            {
+                                this.isClosed = true;
+                                return;
+                            }
+                        }
+                    }
+
+                    gMarkDetailsId = Guid.NewGuid();
+                    Util.BDC.GetValue(@"insert into ed.ExamsVedMarkDetails (Id, ExamsVedHistoryMarkId, ExaminerName, Date) 
+values (@Id, @HistoryMarkId, @ExaminerName, @Date)", new Dictionary<string, object>() { { "@Id", gMarkDetailsId }, { "@HistoryMarkId", gHistoryMarkId }, { "@ExaminerName", _ExaminerName }, { "@Date", DateTime.Now } });
+                }
             }
         }
         private void FillCombos()
@@ -121,35 +169,58 @@ namespace MotiveMailEssay
             bool isLoad = r.Field<bool>("isLoad");
 
             string query = @"
-select "+  
-(isLoad? " FIO, ":"")+
+select " +
+(isLoad ? " FIO, " : "") +
 @" PersonVedNumber 
- FROM ed.ExamsVedHistory "+ 
-(isLoad? " join ed.extPerson on extPerson.Id = PersonId ": "")+
+ FROM ed.ExamsVedHistory " +
+(isLoad ? " join ed.extPerson on extPerson.Id = PersonId " : "") +
 @" where ExamsVedHistory.ExamsVedId = @Id and PersonId = @PersonId ";
-            
+
             DataTable tbl = Util.BDC.GetDataTable(query, dic);
             if (tbl.Rows.Count == 0)
                 return;
             r = tbl.Rows[0];
-            lbPersonNumber.Text = (isLoad ? r.Field<string>("FIO").ToString() +"/ " : "") + r.Field<int?>("PersonVedNumber").ToString();
+            lbPersonNumber.Text = (isLoad ? r.Field<string>("FIO").ToString() + "/ " : "") + r.Field<int?>("PersonVedNumber").ToString();
 
-            if (!IsNew)
+            if (!isMain)
             {
-                query = @"select MarkValue FROM ed.ExamsVedMarkDetails where ExamsVedMarkDetails.Id = @gDetailsId";
+                query = @"select MarkValue, Comment FROM ed.ExamsVedMarkDetails where ExamsVedMarkDetails.Id = @gDetailsId";
                 dic.Add("gDetailsId", gMarkDetailsId);
                 tbl = Util.BDC.GetDataTable(query, dic);
-                if (tbl.Rows.Count == 0)
-                    return;
-                r = tbl.Rows[0];
-                tbExamMark.Text = r.Field<decimal?>("MarkValue").HasValue ? r.Field<decimal?>("MarkValue").ToString() : "";
+                if (tbl.Rows.Count != 0)
+                {
+                    r = tbl.Rows[0];
+                    tbExamMark.Text = r.Field<decimal?>("MarkValue").HasValue ? r.Field<decimal?>("MarkValue").ToString() : "";
+                    tbComment.Text = r.Field<string>("Comment");
+                }
+                else
+                {
+                    tbExamMark.Text = "";
+                    tbComment.Text = "";
+                }
                 tbExamMark.ReadOnly = !String.IsNullOrEmpty(tbExamMark.Text);
             }
             else
             {
-                tbExamMark.Text = "";
-                tbExamMark.ReadOnly = !String.IsNullOrEmpty(tbExamMark.Text);
+                query = @"select ExamsVedHistoryMark.MarkValue, ExamsVedMarkDetails.Comment FROM ed.ExamsVedHistoryMark 
+join ed.ExamsVedMarkDetails on ExamsVedHistoryMark.Id = ExamsVedMarkDetails.ExamsVedHistoryMarkId
+where ExamsVedMarkDetails.Id = @gDetailsId";
+                dic.Add("gDetailsId", gMarkDetailsId);
+                tbl = Util.BDC.GetDataTable(query, dic);
+                if (tbl.Rows.Count != 0)
+                {
+                    r = tbl.Rows[0];
+                    tbExamMark.Text = r.Field<decimal?>("MarkValue").HasValue ? r.Field<decimal?>("MarkValue").ToString() : "";
+                    tbComment.Text = r.Field<string>("Comment");
+                }
+                else
+                {
+                    tbExamMark.Text = "";
+                    tbComment.Text = "";
+                }
+                tbExamMark.ReadOnly = false;
             }
+            
 
             query = @"select Barcode FROM ed.Person where Id = @PersonId";
             tbl = Util.BDC.GetDataTable(query, dic);
@@ -160,7 +231,7 @@ select "+
             _Barcode = Barcode;
 
             string vis_query = @" select Id, ExamsVedId from ed.ExamsVedPersonClosedView where PersonId = @PersonId";
-            DataTable vis_tbl = Util.BDC.GetDataTable(vis_query, new Dictionary<string,object>(){{"@PersonId",_PersonId}});
+            DataTable vis_tbl = Util.BDC.GetDataTable(vis_query, new Dictionary<string, object>() { { "@PersonId", _PersonId } });
             if (vis_tbl.Rows.Count == 0)
                 IsVisible = true;
 
@@ -513,14 +584,15 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
                 }
                 try
                 {
-                    Dictionary<string, object> dic = new Dictionary<string,object>();
-                    dic.Add( "@Mark", iMark );
-                    dic.Add( "@ExaminerName", _ExaminerName );
-                    dic.Add( "@_VedomostId", _VedomostId );
-                    dic.Add( "@PersonId", _PersonId );
-                    dic.Add( "@Id", gMarkDetailsId );
+                    Dictionary<string, object> dic = new Dictionary<string, object>();
+                    dic.Add("@Mark", iMark);
+                    dic.Add("@ExaminerName", _ExaminerName);
+                    dic.Add("@_VedomostId", _VedomostId);
+                    dic.Add("@PersonId", _PersonId);
+                    dic.Add("@Id", gMarkDetailsId);
                     dic.Add("@Date", DateTime.Now);
                     dic.Add("@HistoryMarkId", gHistoryMarkId);
+                    dic.Add("@Comment", tbComment.Text);
 
                     if (!Util.IsTest)
                     {
@@ -538,15 +610,34 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
                             }
                         }
                     }
-                    if (IsNew)
+
+                    //обновить оценку за себя
+                    Util.BDC.ExecuteQuery(@"update ed.ExamsVedMarkDetails set MarkValue=@Mark, Date=@Date, Comment =@Comment where Id = @Id ", dic);
+                    //если ты не главный, 
+                    if (!isMain)
                     {
-                        Util.BDC.GetValue(@"insert into ed.ExamsVedMarkDetails (Id, ExamsVedHistoryMarkId, ExaminerName, MarkValue, Date) 
-values (@Id, @HistoryMarkId, @ExaminerName, @Mark, @Date)", dic);
-                        IsNew = false;
+                        // если оценка не заблокирована 
+                        //string Ischecked = (Util.BDC.GetValue(@"select ISNULL(MarkIsChecked, 0) from ed.ExamsVedHistoryMark where Id = @ExamsVedHistoryMarkId ", new Dictionary<string, object>() { { "@ExamsVedHistoryMarkId", gHistoryMarkId } }).ToString();
+                        bool MarkIsChecked =(bool)Util.BDC.GetValue(@"select ISNULL(MarkIsChecked, 0) from ed.ExamsVedHistoryMark where Id = @ExamsVedHistoryMarkId ", new Dictionary<string, object>() { { "@ExamsVedHistoryMarkId", gHistoryMarkId } });
+                        if (!MarkIsChecked)
+                        {
+                            // обновить среднюю оценку по всей работе
+                            Util.BDC.ExecuteQuery(@"update ed.ExamsVedHistoryMark set MarkValue = 
+                            (select AVG(MarkValue) from ed.ExamsVedMarkDetails where ExamsVedMarkDetails.ExamsVedHistoryMarkId = ExamsVedHistoryMark.Id) where ExamsVedHistoryMark.Id = @ExamsVedHistoryMarkId", 
+                             new Dictionary<string, object>() { { "@ExamsVedHistoryMarkId", gHistoryMarkId } });
+                        }
+                        else
+                        {
+                            MessageBox.Show("Общая оценка за работу уже утверждена", "Невозможно обновить оценку за всю работу");
+                        }
                     }
+                    // обновить всю оценку за работу, поставить отметку о том, что она проверена
                     else
                     {
-                        Util.BDC.GetValue(@"update ed.ExamsVedMarkDetails set MarkValue=@Mark, Date=@Date where Id = @Id ", dic);
+                        Util.BDC.ExecuteQuery(@"update ed.ExamsVedHistoryMark set MarkIsChecked = 1, MarkValue = @MarkValue
+                        where ExamsVedHistoryMark.Id = @ExamsVedHistoryMarkId",
+                        new Dictionary<string, object>() { { "@ExamsVedHistoryMarkId", gHistoryMarkId }, { "@MarkValue", iMark } });
+                        
                     }
                 }
                 catch (Exception ex)
@@ -577,17 +668,21 @@ values (@Id, @HistoryMarkId, @ExaminerName, @Mark, @Date)", dic);
             }
             try
             {
-                string cardId =  _handlerOpenNext(ref ownerRowIndex);
-                if (!String.IsNullOrEmpty(cardId))
-                {
-                    _PersonId = Guid.Parse(cardId);
-                    FillCombos();
-                    if (String.IsNullOrEmpty(tbExamMark.Text))
-                        tbExamMark.ReadOnly = false;
-                }
+                ShowNext();
             }
             catch (Exception )
             {
+            }
+        }
+        private void ShowNext()
+        {
+            string cardId = _handlerOpenNext(ref ownerRowIndex);
+            if (!String.IsNullOrEmpty(cardId))
+            {
+                _PersonId = Guid.Parse(cardId);
+                FillCombos();
+                if (String.IsNullOrEmpty(tbExamMark.Text))
+                    tbExamMark.ReadOnly = false;
             }
         }
         private void btnPrev_Click(object sender, EventArgs e)

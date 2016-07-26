@@ -41,6 +41,8 @@
             this.epErrorInput = new System.Windows.Forms.ErrorProvider(this.components);
             this.label3 = new System.Windows.Forms.Label();
             this.cbEntry = new System.Windows.Forms.CheckBox();
+            this.tbComment = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAbitFiles)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.epErrorInput)).BeginInit();
             this.SuspendLayout();
@@ -49,7 +51,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(540, 15);
+            this.label1.Location = new System.Drawing.Point(692, 15);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(45, 13);
             this.label1.TabIndex = 0;
@@ -58,7 +60,7 @@
             // tbExamMark
             // 
             this.tbExamMark.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbExamMark.Location = new System.Drawing.Point(600, 12);
+            this.tbExamMark.Location = new System.Drawing.Point(752, 12);
             this.tbExamMark.Name = "tbExamMark";
             this.tbExamMark.Size = new System.Drawing.Size(100, 20);
             this.tbExamMark.TabIndex = 1;
@@ -66,7 +68,7 @@
             // btnSave
             // 
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnSave.Location = new System.Drawing.Point(13, 363);
+            this.btnSave.Location = new System.Drawing.Point(13, 499);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 2;
@@ -84,7 +86,7 @@
             this.dgvAbitFiles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvAbitFiles.Location = new System.Drawing.Point(12, 84);
             this.dgvAbitFiles.Name = "dgvAbitFiles";
-            this.dgvAbitFiles.Size = new System.Drawing.Size(688, 273);
+            this.dgvAbitFiles.Size = new System.Drawing.Size(840, 323);
             this.dgvAbitFiles.TabIndex = 3;
             this.dgvAbitFiles.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvAbitFiles_CellClick);
             this.dgvAbitFiles.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvAbitFiles_CellFormatting);
@@ -110,7 +112,7 @@
             // btnNext
             // 
             this.btnNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnNext.Location = new System.Drawing.Point(586, 363);
+            this.btnNext.Location = new System.Drawing.Point(738, 499);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(114, 23);
             this.btnNext.TabIndex = 6;
@@ -121,7 +123,7 @@
             // btnPrev
             // 
             this.btnPrev.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPrev.Location = new System.Drawing.Point(466, 363);
+            this.btnPrev.Location = new System.Drawing.Point(618, 499);
             this.btnPrev.Name = "btnPrev";
             this.btnPrev.Size = new System.Drawing.Size(114, 23);
             this.btnPrev.TabIndex = 7;
@@ -148,7 +150,7 @@
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(331, 39);
+            this.label3.Location = new System.Drawing.Point(483, 39);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(369, 13);
             this.label3.TabIndex = 9;
@@ -165,17 +167,36 @@
             this.cbEntry.UseVisualStyleBackColor = true;
             this.cbEntry.CheckedChanged += new System.EventHandler(this.cbEntry_CheckedChanged);
             // 
+            // tbComment
+            // 
+            this.tbComment.Location = new System.Drawing.Point(12, 435);
+            this.tbComment.Multiline = true;
+            this.tbComment.Name = "tbComment";
+            this.tbComment.Size = new System.Drawing.Size(839, 58);
+            this.tbComment.TabIndex = 11;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(10, 419);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(127, 13);
+            this.label4.TabIndex = 4;
+            this.label4.Text = "Комментарий к работе:";
+            // 
             // ExamMarkCard
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(712, 398);
+            this.ClientSize = new System.Drawing.Size(864, 534);
+            this.Controls.Add(this.tbComment);
             this.Controls.Add(this.cbEntry);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.cbFaculty);
             this.Controls.Add(this.btnPrev);
             this.Controls.Add(this.btnNext);
             this.Controls.Add(this.lbPersonNumber);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.dgvAbitFiles);
             this.Controls.Add(this.btnSave);
@@ -204,5 +225,7 @@
         private System.Windows.Forms.ErrorProvider epErrorInput;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.CheckBox cbEntry;
+        private System.Windows.Forms.TextBox tbComment;
+        private System.Windows.Forms.Label label4;
     }
 }

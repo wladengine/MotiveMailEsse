@@ -87,7 +87,7 @@ namespace MotiveMailEssay
             dic.Add(Key, Value);
         }
 
-        public static void OpenVedCard(Form parent, Guid id, UpdateHandler handler)
+        public static void OpenVedCard(Form parent, Guid id, bool isMain, UpdateHandler handler)
         {
             foreach (Form f in MainForm.MdiChildren)
             {
@@ -96,12 +96,12 @@ namespace MotiveMailEssay
                     f.Close();
                 }
             }
-            var pcard = new VedCard(id);
+            var pcard = new VedCard(id, isMain);
             pcard._handler = handler;
             pcard.MdiParent = MainForm;
             pcard.Show();
         }
-        public static void OpenExamMarkCard(Form parent, Guid id, Guid VedId, CardType type, int row, UpdateHandler handlerUpdate, OpenHandler handlerOpenNext, OpenHandler handlerOpenPrev)
+        public static void OpenExamMarkCard(Form parent, Guid id, Guid VedId, CardType type, int row, bool isMain, UpdateHandler handlerUpdate, OpenHandler handlerOpenNext, OpenHandler handlerOpenPrev)
         {
             foreach (Form f in MainForm.MdiChildren)
             {
@@ -110,12 +110,9 @@ namespace MotiveMailEssay
                     f.Close();
                 }
             }
-            var pcard = new ExamMarkCard(id, VedId, type, row);
-            pcard._handlerUpdate = handlerUpdate;
-            pcard._handlerOpenNext = handlerOpenNext;
-            pcard._handlerOpenPrev = handlerOpenPrev;
-            pcard.MdiParent = MainForm;
-            pcard.Show();
+            var pcard = new ExamMarkCard(id, VedId, type, row, isMain, handlerUpdate, handlerOpenNext, handlerOpenPrev);
+            if (!pcard.isClosed)
+                pcard.Show();
         }
 
         public static string GetUserNameRectorat()

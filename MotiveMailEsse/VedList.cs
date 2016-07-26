@@ -118,8 +118,9 @@ namespace MotiveMailEssay
                             ,extExamsVed.StudyBasisName  AS 'Основа' 
                             ,extExamsVed.Date as 'Дата' 
                             ,extExamsVed.ExamName AS 'Экзамен'
-                            ,extExamsVed.IsLocked  
-                            FROM ed.[extExamsVed]
+                            ,extExamsVed.IsLocked " +
+                            (!TestorsLogins.Contains(System.Environment.UserName) ? ", ISNULL(ExaminerInExamsVed.IsMain, 0)" : ", '0' as IsMain") + 
+                            @" FROM ed.[extExamsVed]
                             Inner join ed.StudyLevelGroup on StudyLevelGroup.Id = extExamsVed.StudyLevelGroupId  ";
 
             if (!TestorsLogins.Contains(System.Environment.UserName))
@@ -161,6 +162,7 @@ namespace MotiveMailEssay
                 dgvVedList.DataSource = tbl;
                 dgvVedList.Columns["ExamsVedId"].Visible = false;
                 dgvVedList.Columns["IsLocked"].Visible = false;
+                dgvVedList.Columns["IsMain"].Visible = false;
                 
                 dgvVedList.Columns["Экзамен"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 dgvVedList.ReadOnly = true;
@@ -185,7 +187,8 @@ namespace MotiveMailEssay
                 if ((bool)dgvVedList.Rows[e.RowIndex].Cells["IsLocked"].Value == true)
                 {
                     Guid id = (Guid)dgvVedList.Rows[e.RowIndex].Cells["ExamsVedId"].Value;
-                    Util.OpenVedCard(this, id, new UpdateHandler(FillGrid));
+                    bool isMain = dgvVedList.Rows[e.RowIndex].Cells["IsMain"].Value.ToString() =="1";
+                    Util.OpenVedCard(this, id, isMain, new UpdateHandler(FillGrid));
                 }
                 else
                 {
@@ -231,7 +234,8 @@ namespace MotiveMailEssay
                 if ((bool) dgvVedList.Rows[row].Cells["IsLocked"].Value == true)
                 {
                     Guid id = (Guid)dgvVedList.Rows[row].Cells["ExamsVedId"].Value;
-                    Util.OpenVedCard(this, id, new UpdateHandler(FillGrid));
+                    bool isMain = dgvVedList.Rows[row].Cells["IsMain"].Value.ToString() == "1";
+                    Util.OpenVedCard(this, id, isMain, new UpdateHandler(FillGrid));
                 }
                 else
                 {

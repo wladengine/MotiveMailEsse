@@ -16,16 +16,18 @@ namespace MotiveMailEssay
         public UpdateHandler _handler;
 
         private bool isLoad;
+        private bool isMain;
         private Guid _VedId;
         private bool IsPortfolioAnonymPartMotivLetter;
         private bool IsPortfolioAnonymPartEssay;
         private bool IsPortfolioCommonPart;
         private bool IsPhilosophyEssay;
 
-        public VedCard(Guid id)
+        public VedCard(Guid id, bool _isMain)
         {
             InitializeComponent();
             _VedId = id;
+            isMain = _isMain;
             FillCombos();
             FillGrid();
         }
@@ -114,31 +116,123 @@ namespace MotiveMailEssay
                 }
             }
         }
-
-        private void FillGrid()
+        private void FillGridIfIsMain()
         {
             if (IsPortfolioAnonymPartMotivLetter || IsPortfolioAnonymPartEssay)
             {
-                string query = @"SELECT [ExamsVedId], [PersonId], " 
-                    + (isLoad ? "FIO as 'Фамилия'":"[PersonVedNumber] as 'Рег.номер'")
-                    + @", Mark as 'Оценка за м.письмо' , OralMark as 'Оценка за эссе'
-    FROM [ed].[ExamsVedHistory]
-    join ed.extPerson on extPerson.Id = PersonId
-    WHERE ExamsVedId = @Id";
-               query = @"
+                string query = @"
 SELECT ExamsVedId
 , PersonId
- , " + (isLoad ? "FIO as 'Фамилия'":"[PersonVedNumber] as 'Рег.номер'")+ @"
-"+ (IsPortfolioAnonymPartMotivLetter ? @" , Details.MarkValue as 'Оценка за м.письмо' " : "" )
- + (IsPortfolioAnonymPartEssay ? @", Details2.MarkValue as 'Оценка за эссе' ":"") +@"
+, " + (isLoad ? "FIO as 'Фамилия'" : "[PersonVedNumber] as 'Рег.номер'") + @"
+" + (IsPortfolioAnonymPartMotivLetter ? @" , Marks.MarkValue as 'Оценка за м.письмо' " : "")
+ + (IsPortfolioAnonymPartEssay ? @", Marks.MarkValue as 'Оценка за эссе' " : "") + @"
+FROM ed.ExamsVedHistory History
+join ed.extPerson on extPerson.Id = History.PersonId "
+
++ (IsPortfolioAnonymPartMotivLetter ? (@"
+left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=3  ") : "")
+
++ (IsPortfolioAnonymPartEssay ? (@"
+left join ed.ExamsVedHistoryMark Marks2 on History.Id = Marks2.ExamsVedHistoryId and Marks2.ExamsVedMarkTypeId=4 ") : "")
+
++ @"WHERE ExamsVedId = @Id";
+
+                Dictionary<string, object> dic = new Dictionary<string, object>();
+                dic.AddVal("@Id", _VedId);
+
+                while (dgvVedPersonList.Columns.Count > 0)
+                {
+                    dgvVedPersonList.Columns.Remove(dgvVedPersonList.Columns[0]);
+                }
+
+                DataTable tbl = Util.BDC.GetDataTable(query, dic);
+                dgvVedPersonList.DataSource = tbl;
+
+                if (dgvVedPersonList.Columns.Contains("Фамилия"))
+                    dgvVedPersonList.Columns["Фамилия"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+
+                if (dgvVedPersonList.Columns.Contains("Рег.номер"))
+                    dgvVedPersonList.Columns["Рег.номер"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+
+                dgvVedPersonList.Columns["ExamsVedId"].Visible = false;
+                dgvVedPersonList.Columns["PersonId"].Visible = false;
+            }
+            else if (IsPortfolioCommonPart)
+            {
+                string query = @"
+SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
+Marks.MarkValue as 'Оценка за портфолио' 
+FROM ed.ExamsVedHistory History 
+join ed.extPerson on extPerson.Id = History.PersonId
+left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=5 "
++ @"WHERE ExamsVedId = @Id";
+
+                Dictionary<string, object> dic = new Dictionary<string, object>();
+                dic.AddVal("@Id", _VedId);
+
+                DataTable tbl = Util.BDC.GetDataTable(query, dic);
+                while (dgvVedPersonList.Columns.Count > 0)
+                {
+                    dgvVedPersonList.Columns.Remove(dgvVedPersonList.Columns[0]);
+                }
+
+                dgvVedPersonList.DataSource = tbl;
+
+                if (dgvVedPersonList.Columns.Contains("ФИО"))
+                    dgvVedPersonList.Columns["ФИО"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+
+                dgvVedPersonList.Columns["ExamsVedId"].Visible = false;
+                dgvVedPersonList.Columns["PersonId"].Visible = false;
+            }
+            else if (IsPhilosophyEssay)
+            {
+                string query = @"
+SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
+Marks.MarkValue as 'Оценка за эссе по философии' 
+FROM ed.ExamsVedHistory History 
+join ed.extPerson on extPerson.Id = History.PersonId
+left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=6 "
++ @"WHERE ExamsVedId = @Id";
+                Dictionary<string, object> dic = new Dictionary<string, object>();
+                dic.AddVal("@Id", _VedId);
+                DataTable tbl = Util.BDC.GetDataTable(query, dic);
+                while (dgvVedPersonList.Columns.Count > 0)
+                {
+                    dgvVedPersonList.Columns.Remove(dgvVedPersonList.Columns[0]);
+                }
+                dgvVedPersonList.DataSource = tbl;
+                if (dgvVedPersonList.Columns.Contains("ФИО"))
+                {
+                    dgvVedPersonList.Columns["ФИО"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                }
+                dgvVedPersonList.Columns["ExamsVedId"].Visible = false;
+                dgvVedPersonList.Columns["PersonId"].Visible = false;
+            }
+            DgvAddColumns();
+        }
+        private void FillGrid()
+        {
+            if (isMain)
+            {
+                FillGridIfIsMain();
+                return;
+            }
+            if (IsPortfolioAnonymPartMotivLetter || IsPortfolioAnonymPartEssay)
+            { 
+                string query = @"
+SELECT ExamsVedId
+, PersonId
+, " + (isLoad ? "FIO as 'Фамилия'":"[PersonVedNumber] as 'Рег.номер'")+ @"
+"+ (IsPortfolioAnonymPartMotivLetter ? @" , case when (Marks.MarkIsChecked=1) then Marks.MarkValue else Details.MarkValue end as 'Оценка за м.письмо' " : "" )
+ + (IsPortfolioAnonymPartEssay ? @"case when (Marks2.MarkIsChecked=1) then Marks2.MarkValue else Details2.MarkValue end as 'Оценка за эссе' " : "") + @"
 FROM ed.ExamsVedHistory History
 join ed.extPerson on extPerson.Id = History.PersonId "
 
 + (IsPortfolioAnonymPartMotivLetter ? (@"
 left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=3
-left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Marks.Id and Details.ExaminerName like '%"+Util.GetUserNameRectorat()+@"%' " ) : "") 
+left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Marks.Id and Details.ExaminerName like '%"+Util.GetUserNameRectorat()+@"%' " ) : "")
 
-+ (IsPortfolioAnonymPartMotivLetter ? (@"
++ (IsPortfolioAnonymPartEssay ? (@"
 left join ed.ExamsVedHistoryMark Marks2 on History.Id = Marks2.ExamsVedHistoryId and Marks2.ExamsVedMarkTypeId=4
 left join ed.ExamsVedMarkDetails Details2 on Details2.ExamsVedHistoryMarkId = Marks2.Id and Details2.ExaminerName like '%" + Util.GetUserNameRectorat() + @"%'" ) : "")
 
@@ -166,17 +260,9 @@ left join ed.ExamsVedMarkDetails Details2 on Details2.ExamsVedHistoryMarkId = Ma
             }
             else if (IsPortfolioCommonPart)
             {
-//                string query = @"SELECT [ExamsVedId]
-//                               , Person.Id as PersonId
-//                               , Person.Surname + ' ' + Person.Name + ' '+Person.SecondName as 'ФИО'
-//                               --, [PersonVedNumber] as 'Рег.номер'
-//                               , Mark as 'Оценка за портфолио'  
-//                               FROM [ed].[ExamsVedHistory]
-//                               join ed.Person on Person.Id = ExamsVedHistory.PersonId
-//                               WHERE ExamsVedId = @Id";
                 string query = @"
 SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
-Details.MarkValue as 'Оценка за портфолио' 
+case when (Marks.MarkIsChecked=1) then Marks.MarkValue else Details.MarkValue end  as 'Оценка за портфолио' 
 FROM ed.ExamsVedHistory History 
 join ed.extPerson on extPerson.Id = History.PersonId
 left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=5
@@ -204,7 +290,7 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
             {
                 string query = @"
 SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
-Details.MarkValue as 'Оценка за эссе по философии' 
+case when (Marks.MarkIsChecked=1) then Marks.MarkValue else Details.MarkValue end as 'Оценка за эссе по философии' 
 FROM ed.ExamsVedHistory History 
 join ed.extPerson on extPerson.Id = History.PersonId
 left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=6
@@ -244,7 +330,7 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
                         ctype = CardType.Motivation; 
                     if (e.ColumnIndex == dgvVedPersonList.Columns["Essay"].Index)
                         ctype = CardType.Essay; 
-                    Util.OpenExamMarkCard(this, id, _VedId, ctype, row, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
+                    Util.OpenExamMarkCard(this, id, _VedId, ctype, row, isMain, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
                 }
             }
             else if (IsPortfolioCommonPart)
@@ -258,7 +344,7 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
                     CardType type = CardType.Uknown;
                     if (e.ColumnIndex == dgvVedPersonList.Columns["Portfolio"].Index)
                         type = CardType.Portfolio;
-                    Util.OpenExamMarkCard(this, id, _VedId, type, row, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
+                    Util.OpenExamMarkCard(this, id, _VedId, type, row, isMain, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
                 }
             }
             else if (IsPhilosophyEssay)
@@ -272,7 +358,7 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
                     CardType type = CardType.Uknown;
                     if (e.ColumnIndex == dgvVedPersonList.Columns["PhilosophyEssay"].Index)
                         type = CardType.PhilosophyEssay;
-                    Util.OpenExamMarkCard(this, id, _VedId, type, row, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
+                    Util.OpenExamMarkCard(this, id, _VedId, type, row, isMain, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
                 }
             }
         }

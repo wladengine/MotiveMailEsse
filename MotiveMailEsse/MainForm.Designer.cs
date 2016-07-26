@@ -33,6 +33,7 @@
             this.mainListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.smiDics = new System.Windows.Forms.ToolStripMenuItem();
             this.entryListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.работыОжидающиеОценкиМоиОценкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -40,7 +41,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.listsToolStripMenuItem,
-            this.smiDics});
+            this.smiDics,
+            this.работыОжидающиеОценкиМоиОценкиToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(667, 24);
@@ -58,9 +60,26 @@
             // mainListToolStripMenuItem
             // 
             this.mainListToolStripMenuItem.Name = "mainListToolStripMenuItem";
-            this.mainListToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.mainListToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.mainListToolStripMenuItem.Text = "Список ведомостей";
             this.mainListToolStripMenuItem.Click += new System.EventHandler(this.mainListToolStripMenuItem_Click);
+            // 
+            // smiDics
+            // 
+            this.smiDics.Name = "smiDics";
+            this.smiDics.Size = new System.Drawing.Size(12, 20);
+            // 
+            // entryListToolStripMenuItem
+            // 
+            this.entryListToolStripMenuItem.Name = "entryListToolStripMenuItem";
+            this.entryListToolStripMenuItem.Size = new System.Drawing.Size(32, 19);
+            // 
+            // работыОжидающиеОценкиМоиОценкиToolStripMenuItem
+            // 
+            this.работыОжидающиеОценкиМоиОценкиToolStripMenuItem.Name = "работыОжидающиеОценкиМоиОценкиToolStripMenuItem";
+            this.работыОжидающиеОценкиМоиОценкиToolStripMenuItem.Size = new System.Drawing.Size(257, 20);
+            this.работыОжидающиеОценкиМоиОценкиToolStripMenuItem.Text = "Работы, ожидающие оценки (Мои оценки)";
+            this.работыОжидающиеОценкиМоиОценкиToolStripMenuItem.Click += new System.EventHandler(this.работыОжидающиеОценкиМоиОценкиToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -76,6 +95,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Проверка мотивационных писем и эссе";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -90,5 +110,6 @@
         private System.Windows.Forms.ToolStripMenuItem mainListToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem smiDics;
         private System.Windows.Forms.ToolStripMenuItem entryListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem работыОжидающиеОценкиМоиОценкиToolStripMenuItem;
     }
 }
