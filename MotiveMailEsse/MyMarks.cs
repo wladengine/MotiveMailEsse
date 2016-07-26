@@ -40,12 +40,23 @@ extExamsVed.Id as ExamsVedId
 , History.PersonId as PersonId
 , case when (extExamsVed.isLoad = 1) then convert(nvarchar(100),extPerson.FIO) else PersonVedNumber end as 'Абитуриент'
 , Details.MarkValue as 'Оценка'
+<<<<<<< HEAD
 , (select convert(bit, case when (IsMain=1) then 1 else 0 end)  from ed.ExaminerInExamsVed where extExamsVed.Id = ExaminerInExamsVed.ExamsVedId and ExaminerInExamsVed.ExaminerAccount like '%" + Util.GetUserNameRectorat() + @"%') as IsMain
 from ed.extExamsVed 
 join ed.ExamsVedHistory History on History.ExamsVedId = extExamsVed.Id
 join ed.ExamsVedHistoryMark Mark on Mark.ExamsVedHistoryId = History.Id
 join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark.Id
 join ed.extPerson on ExtPerson.Id = History.PersonId
+=======
+, convert(bit,(case when (select convert(bit, case when (IsMain=1) then 1 else 0 end) from ExaminerInExamsVed where extExamsVed.Id = ExaminerInExamsVed.ExamsVedId and ExaminerInExamsVed.ExaminerAccount like '%" + Util.GetUserNameRectorat() + @"%') 
+is null then 0 else 1 end))
+as IsMain
+from extExamsVed 
+join ExamsVedHistory History on History.ExamsVedId = extExamsVed.Id
+join ExamsVedHistoryMark Mark on Mark.ExamsVedHistoryId = History.Id
+join ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark.Id
+join extPerson on ExtPerson.Id = History.PersonId
+>>>>>>> origin/master
 where 
 (Mark.MarkIsChecked = 0 or Mark.MarkIsChecked is null) and 
 Details.MarkValue is null and Details.ExaminerName like '%" + Util.GetUserNameRectorat() + @"%' and Mark.ExamsVedMarkTypeId = " + Type.ToString() + @" 
