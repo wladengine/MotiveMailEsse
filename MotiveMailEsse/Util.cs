@@ -23,8 +23,8 @@ namespace MotiveMailEssay
 
         static Util()
         {
-            //string connStr = "Data Source = srveducation; Initial Catalog=Priem2016;Integrated Security=False; User=MotivMailFileReader;Password=$MotivMail4FileReader.;Connect Timeout=300";
-            string connStr = "Data Source = srveducation; Initial Catalog=Priem2016_TEST;Integrated Security=True; Connect Timeout=300";
+            string connStr = "Data Source = srveducation; Initial Catalog=Priem2016;Integrated Security=False; User=MotivMailFileReader;Password=$MotivMail4FileReader.;Connect Timeout=300";
+            //string connStr = "Data Source = srveducation; Initial Catalog=Priem2016_TEST;Integrated Security=True; Connect Timeout=300";
 
             BDC = new BDClass(connStr);
 

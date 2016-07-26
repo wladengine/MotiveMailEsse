@@ -72,7 +72,6 @@ namespace MotiveMailEssay
             IsPortfolioAnonymPartMotivLetter = r.Field<int>("IsPortfolioAnonymPartMotivLetter")==1;
             IsPortfolioAnonymPartEssay = r.Field<int>("IsPortfolioAnonymPartEssay")==1;
             IsPhilosophyEssay = r.Field<int>("IsPhilosophyEssay") == 1;
-
         }
         private void DgvAddColumns()
         {
