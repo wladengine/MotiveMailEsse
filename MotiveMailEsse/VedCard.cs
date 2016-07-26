@@ -222,8 +222,8 @@ left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId a
 SELECT ExamsVedId
 , PersonId
 , " + (isLoad ? "FIO as 'Фамилия'":"[PersonVedNumber] as 'Рег.номер'")+ @"
-"+ (IsPortfolioAnonymPartMotivLetter ? @" , case when (Marks.MarkIsChecked=1) then Marks.MarkValue else Details.MarkValue end as 'Оценка за м.письмо' " : "" )
- + (IsPortfolioAnonymPartEssay ? @"case when (Marks2.MarkIsChecked=1) then Marks2.MarkValue else Details2.MarkValue end as 'Оценка за эссе' " : "") + @"
+" + (IsPortfolioAnonymPartMotivLetter ? @" , case when (Marks.MarkIsChecked=1) then CONVERT(nvarchar, Marks.MarkValue) else ISNULL(CONVERT(nvarchar, Details.MarkValue), '') + ' (' + ISNULL(CONVERT(nvarchar, Marks.MarkValue), 'нет') + ')' end as 'Оценка за м.письмо (+сред)' " : "")
+ + (IsPortfolioAnonymPartEssay ? @", case when (Marks2.MarkIsChecked=1) then CONVERT(nvarchar, Marks2.MarkValue) else ISNULL(CONVERT(nvarchar, Details2.MarkValue), '') + ' (' + ISNULL(CONVERT(nvarchar, Marks2.MarkValue), 'нет') + ')' end as 'Оценка за эссе (+сред)' " : "") + @"
 FROM ed.ExamsVedHistory History
 join ed.extPerson on extPerson.Id = History.PersonId "
 
@@ -261,7 +261,7 @@ left join ed.ExamsVedMarkDetails Details2 on Details2.ExamsVedHistoryMarkId = Ma
             {
                 string query = @"
 SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
-case when (Marks.MarkIsChecked=1) then Marks.MarkValue else Details.MarkValue end  as 'Оценка за портфолио' 
+case when (Marks.MarkIsChecked=1) then CONVERT(nvarchar, Marks.MarkValue) else ISNULL(CONVERT(nvarchar, Details.MarkValue), '') + ' (' + ISNULL(CONVERT(nvarchar, Marks.MarkValue), 'нет') + ')' end  as 'Оценка за портфолио (+сред)' 
 FROM ed.ExamsVedHistory History 
 join ed.extPerson on extPerson.Id = History.PersonId
 left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=5
@@ -289,7 +289,7 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
             {
                 string query = @"
 SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
-case when (Marks.MarkIsChecked=1) then Marks.MarkValue else Details.MarkValue end as 'Оценка за эссе по философии' 
+case when (Marks.MarkIsChecked=1) then CONVERT(nvarchar, Marks.MarkValue) else ISNULL(CONVERT(nvarchar, Details.MarkValue), '') + ' (' + ISNULL(CONVERT(nvarchar, Marks.MarkValue), 'нет') + ')' end as 'Оценка за эссе по философии (+сред)' 
 FROM ed.ExamsVedHistory History 
 join ed.extPerson on extPerson.Id = History.PersonId
 left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=6

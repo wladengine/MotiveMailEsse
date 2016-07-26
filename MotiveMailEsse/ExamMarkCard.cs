@@ -148,11 +148,19 @@ namespace MotiveMailEssay
                                 return;
                             }
                         }
-                    }
-
-                    gMarkDetailsId = Guid.NewGuid();
-                    Util.BDC.GetValue(@"insert into ed.ExamsVedMarkDetails (Id, ExamsVedHistoryMarkId, ExaminerName, Date) 
+                        else
+                        {
+                            gMarkDetailsId = Guid.NewGuid();
+                            Util.BDC.GetValue(@"insert into ed.ExamsVedMarkDetails (Id, ExamsVedHistoryMarkId, ExaminerName, Date) 
 values (@Id, @HistoryMarkId, @ExaminerName, @Date)", new Dictionary<string, object>() { { "@Id", gMarkDetailsId }, { "@HistoryMarkId", gHistoryMarkId }, { "@ExaminerName", _ExaminerName }, { "@Date", DateTime.Now } });
+                        }
+                    }
+                    else
+                    {
+                        gMarkDetailsId = Guid.NewGuid();
+                        Util.BDC.GetValue(@"insert into ed.ExamsVedMarkDetails (Id, ExamsVedHistoryMarkId, ExaminerName, Date) 
+values (@Id, @HistoryMarkId, @ExaminerName, @Date)", new Dictionary<string, object>() { { "@Id", gMarkDetailsId }, { "@HistoryMarkId", gHistoryMarkId }, { "@ExaminerName", _ExaminerName }, { "@Date", DateTime.Now } });
+                    }
                 }
             }
         }
