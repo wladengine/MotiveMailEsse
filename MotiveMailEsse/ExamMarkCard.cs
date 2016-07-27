@@ -117,7 +117,7 @@ namespace MotiveMailEssay
                            join ed.ExamsVedHistoryMark Mark on Details.ExamsVedHistoryMarkId = Mark.Id
                            where Mark.Id = @HistoryMarkId ";
                 DataTable tbl_cnt = Util.BDC.GetDataTable(squery, new Dictionary<string, object> {{ "@HistoryMarkId", gHistoryMarkId } });
-                squery = @" select  ISNULL([ExaminerCount],0) from ed.ExamsVed where Id=@VedId ";
+                squery = @" select ISNULL([ExaminerCount], 1) from ed.ExamsVed where Id=@VedId ";
                 int ExaminerCount = int.Parse(Util.BDC.GetValue(squery, new Dictionary<string, object>() { { "@VedId", _VedomostId } }).ToString());
                 // Например три или более записей создано, то закрыть доступ
                 if (tbl_cnt.Rows.Count >= ExaminerCount && !isMain)
