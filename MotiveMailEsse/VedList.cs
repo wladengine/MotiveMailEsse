@@ -22,7 +22,7 @@ namespace MotiveMailEssay
         void ExtraInit()
         {
             TestorsLogins = new List<string>();
-            TestorsLogins.Add("st021085");
+           // TestorsLogins.Add("st021085");
             TestorsLogins.Add("v.chikhira");
             if (!TestorsLogins.Contains(System.Environment.UserName))
             {
@@ -119,7 +119,7 @@ namespace MotiveMailEssay
                             ,extExamsVed.Date as 'Дата' 
                             ,extExamsVed.ExamName AS 'Экзамен'
                             ,extExamsVed.IsLocked " +
-                            (!TestorsLogins.Contains(System.Environment.UserName) ? ", ISNULL(ExaminerInExamsVed.IsMain, 0)" : ", '0' as IsMain") + 
+                            (!TestorsLogins.Contains(System.Environment.UserName) ? ", ISNULL(ExaminerInExamsVed.IsMain, 0) as IsMain" : ", '0' as IsMain") + 
                             @" FROM ed.[extExamsVed]
                             Inner join ed.StudyLevelGroup on StudyLevelGroup.Id = extExamsVed.StudyLevelGroupId  ";
 
