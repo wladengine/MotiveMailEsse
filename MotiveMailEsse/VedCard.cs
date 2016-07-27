@@ -28,6 +28,7 @@ namespace MotiveMailEssay
             InitializeComponent();
             _VedId = id;
             isMain = _isMain;
+            lblIsMain.Visible = isMain;
             FillCombos();
             FillGrid();
         }

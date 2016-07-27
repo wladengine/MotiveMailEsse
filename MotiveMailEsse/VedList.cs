@@ -22,7 +22,7 @@ namespace MotiveMailEssay
         void ExtraInit()
         {
             TestorsLogins = new List<string>();
-           // TestorsLogins.Add("st021085");
+            TestorsLogins.Add("st021085");
             TestorsLogins.Add("v.chikhira");
             if (!TestorsLogins.Contains(System.Environment.UserName))
             {
@@ -71,6 +71,7 @@ namespace MotiveMailEssay
         private void LoadFaculties()
         {
             string query = "SELECT DISTINCT ExamsVed.FacultyId AS Id, SP_Faculty.Name AS Name FROM ed.ExamsVed Inner join ed.SP_Faculty on SP_Faculty.Id = ExamsVed.FacultyId ";
+            query += " ORDER BY Name";
             DataTable tbl = Util.BDC.GetDataTable(query, null);
             var bind = (from DataRow rw in tbl.Rows
                         select new KeyValuePair<string, string>(rw.Field<int>("Id").ToString(), rw.Field<string>("Name"))).ToList();
@@ -101,6 +102,7 @@ namespace MotiveMailEssay
                 query += " WHERE ExamsVed.FacultyId = @FacultyId";
                 dic.AddVal("@FacultyId", FacultyId);
             }
+            query += " ORDER BY Name";
             DataTable tbl = Util.BDC.GetDataTable(query, dic);
             var bind = (from DataRow rw in tbl.Rows
                         select new KeyValuePair<string, string>(rw.Field<int>("Id").ToString(), rw.Field<string>("Name"))).ToList();
@@ -119,7 +121,7 @@ namespace MotiveMailEssay
                             ,extExamsVed.Date as 'Дата' 
                             ,extExamsVed.ExamName AS 'Экзамен'
                             ,extExamsVed.IsLocked " +
-                            (!TestorsLogins.Contains(System.Environment.UserName) ? ", ISNULL(ExaminerInExamsVed.IsMain, 0) as IsMain" : ", '0' as IsMain") + 
+                            (!TestorsLogins.Contains(System.Environment.UserName) ? ", convert(bit,ISNULL(ExaminerInExamsVed.IsMain, 0)) as IsMain" : ", convert(bit,'0') as IsMain") + 
                             @" FROM ed.[extExamsVed]
                             Inner join ed.StudyLevelGroup on StudyLevelGroup.Id = extExamsVed.StudyLevelGroupId  ";
 
@@ -187,7 +189,7 @@ namespace MotiveMailEssay
                 if ((bool)dgvVedList.Rows[e.RowIndex].Cells["IsLocked"].Value == true)
                 {
                     Guid id = (Guid)dgvVedList.Rows[e.RowIndex].Cells["ExamsVedId"].Value;
-                    bool isMain = dgvVedList.Rows[e.RowIndex].Cells["IsMain"].Value.ToString() =="1";
+                    bool isMain = (bool)dgvVedList.Rows[e.RowIndex].Cells["IsMain"].Value;
                     Util.OpenVedCard(this, id, isMain, new UpdateHandler(FillGrid));
                 }
                 else
@@ -234,7 +236,7 @@ namespace MotiveMailEssay
                 if ((bool) dgvVedList.Rows[row].Cells["IsLocked"].Value == true)
                 {
                     Guid id = (Guid)dgvVedList.Rows[row].Cells["ExamsVedId"].Value;
-                    bool isMain = dgvVedList.Rows[row].Cells["IsMain"].Value.ToString() == "1";
+                    bool isMain = (bool)dgvVedList.Rows[row].Cells["IsMain"].Value;
                     Util.OpenVedCard(this, id, isMain, new UpdateHandler(FillGrid));
                 }
                 else

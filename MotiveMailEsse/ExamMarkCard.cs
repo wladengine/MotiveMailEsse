@@ -278,6 +278,7 @@ where ExamsVedMarkDetails.Id = @gDetailsId";
                                   ,(case when (qFiles.ApplicationId is null and qFiles.CommitId is null) then 'общ.файл' else 'к заявлению ('+Entry.ObrazProgramName+')' end) as 'Тип файла'
                                   ,(case when IsApproved IS NULL then '" + IsApprovedNULL + @"' else (case when IsApproved = 'True' then '" + IsApprovedTrue + @"' else '" + IsApprovedFalse + @"' end )end) AS 'Статус'
                                   , EntryId
+                                  , (case when (isDeleted=1) then 'Удалено' else '' end) as 'Актуальность файла'
                               FROM [dbo].[extEverExistedFiles] as qFiles
                               inner join Person on Person.Id = qFiles.PersonId 
                               left join Entry on Entry.Id = qFiles.EntryId
@@ -335,6 +336,7 @@ SELECT qFiles.Id
 ,(case when (qFiles.ApplicationId is null and qFiles.CommitId is null) then 'общ.файл' else 'к заявлению ('+Entry.ObrazProgramName+')' end) as 'Тип файла'
 ,(case when IsApproved IS NULL then '" + IsApprovedNULL + @"' else (case when IsApproved = 'True' then '" + IsApprovedTrue + @"' else '" + IsApprovedFalse + @"' end )end) AS 'Статус'
 , Entry.Id as EntryId
+ , (case when (isDeleted=1) then 'Удалено' else '' end) as 'Актуальность файла'
 FROM [OnlinePriem2015].[dbo].[qAbitFiles_AllExceptPassport] as qFiles
 LEFT JOIN Application ON ApplicationId = Application.Id 
 LEFT JOIN Application_LOG ON ApplicationId = Application_LOG.Id 
