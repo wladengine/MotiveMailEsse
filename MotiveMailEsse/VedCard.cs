@@ -288,8 +288,9 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
             else if (IsPhilosophyEssay)
             {
                 string query = @"
-SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
-case when (Marks.MarkIsChecked=1) then CONVERT(nvarchar, Marks.MarkValue) else ISNULL(CONVERT(nvarchar, Details.MarkValue), '') + ' (' + ISNULL(CONVERT(nvarchar, Marks.MarkValue), 'нет') + ')' end as 'Оценка за эссе по философии (+сред)' 
+SELECT ExamsVedId, PersonId
+, " + (isLoad ? "FIO as 'Фамилия'" : "[PersonVedNumber] as 'Рег.номер'") + @"
+, case when (Marks.MarkIsChecked=1) then CONVERT(nvarchar, Marks.MarkValue) else ISNULL(CONVERT(nvarchar, Details.MarkValue), '') + ' (' + ISNULL(CONVERT(nvarchar, Marks.MarkValue), 'нет') + ')' end as 'Оценка за эссе по философии (+сред)' 
 FROM ed.ExamsVedHistory History 
 join ed.extPerson on extPerson.Id = History.PersonId
 left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=6
