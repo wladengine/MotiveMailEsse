@@ -27,6 +27,7 @@ namespace MotiveMailEssay
         private Guid _VedomostId;
         private CardType _type;
         private int _itype;
+        private bool isLoad;
 
         protected int ownerRowIndex = 0;
         private string IsApprovedTrue = "Проверено";
@@ -174,7 +175,7 @@ values (@Id, @HistoryMarkId, @ExaminerName, @Date)", new Dictionary<string, obje
             string faculty = @"select FacultyId, isLoad FROM ed.ExamsVed where ExamsVed.Id = @Id ";
             DataRow r = Util.BDC.GetDataTable(faculty, dic).Rows[0];
             _faculty = r.Field<int?>("FacultyId").ToString();
-            bool isLoad = r.Field<bool>("isLoad");
+            isLoad = r.Field<bool>("isLoad");
 
             string query = @"
 select " +
@@ -207,6 +208,8 @@ select " +
                     tbComment.Text = "";
                 }
                 tbExamMark.ReadOnly = !String.IsNullOrEmpty(tbExamMark.Text);
+                if (isLoad)
+                    tbExamMark.ReadOnly = true;
             }
             else
             {
@@ -227,6 +230,8 @@ where ExamsVedMarkDetails.Id = @gDetailsId";
                     tbComment.Text = "";
                 }
                 tbExamMark.ReadOnly = false;
+                if (isLoad)
+                    tbExamMark.ReadOnly = true;
             }
             
 
@@ -278,7 +283,7 @@ where ExamsVedMarkDetails.Id = @gDetailsId";
                                   ,(case when (qFiles.ApplicationId is null and qFiles.CommitId is null) then 'общ.файл' else 'к заявлению ('+Entry.ObrazProgramName+')' end) as 'Тип файла'
                                   ,(case when IsApproved IS NULL then '" + IsApprovedNULL + @"' else (case when IsApproved = 'True' then '" + IsApprovedTrue + @"' else '" + IsApprovedFalse + @"' end )end) AS 'Статус'
                                   , EntryId
-                                  , (case when (isDeleted=1) then 'Удалено' else '' end) as 'Актуальность файла'
+                                  , (case when (qFiles.isDeleted=1) then 'Удалено' else '' end) as 'Актуальность файла'
                               FROM [dbo].[extEverExistedFiles] as qFiles
                               inner join Person on Person.Id = qFiles.PersonId 
                               left join Entry on Entry.Id = qFiles.EntryId
@@ -336,7 +341,6 @@ SELECT qFiles.Id
 ,(case when (qFiles.ApplicationId is null and qFiles.CommitId is null) then 'общ.файл' else 'к заявлению ('+Entry.ObrazProgramName+')' end) as 'Тип файла'
 ,(case when IsApproved IS NULL then '" + IsApprovedNULL + @"' else (case when IsApproved = 'True' then '" + IsApprovedTrue + @"' else '" + IsApprovedFalse + @"' end )end) AS 'Статус'
 , Entry.Id as EntryId
- , (case when (isDeleted=1) then 'Удалено' else '' end) as 'Актуальность файла'
 FROM [OnlinePriem2015].[dbo].[qAbitFiles_AllExceptPassport] as qFiles
 LEFT JOIN Application ON ApplicationId = Application.Id 
 LEFT JOIN Application_LOG ON ApplicationId = Application_LOG.Id 
@@ -583,6 +587,11 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
         }
         private bool Save()
         {
+            if (isLoad)
+            {
+                MessageBox.Show("Ведомость уже загружена, изменение оценки невозможно", "Ошибка");
+                return true;
+            }
             if (CheckFields())
             {
                 string Mark = tbExamMark.Text.Replace('.',',');
@@ -627,7 +636,6 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
                     if (!isMain)
                     {
                         // если оценка не заблокирована 
-                        //string Ischecked = (Util.BDC.GetValue(@"select ISNULL(MarkIsChecked, 0) from ed.ExamsVedHistoryMark where Id = @ExamsVedHistoryMarkId ", new Dictionary<string, object>() { { "@ExamsVedHistoryMarkId", gHistoryMarkId } }).ToString();
                         bool MarkIsChecked =(bool)Util.BDC.GetValue(@"select ISNULL(MarkIsChecked, 0) from ed.ExamsVedHistoryMark where Id = @ExamsVedHistoryMarkId ", new Dictionary<string, object>() { { "@ExamsVedHistoryMarkId", gHistoryMarkId } });
                         if (!MarkIsChecked)
                         {
@@ -647,7 +655,6 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
                         Util.BDC.ExecuteQuery(@"update ed.ExamsVedHistoryMark set MarkIsChecked = 1, MarkValue = @MarkValue
                         where ExamsVedHistoryMark.Id = @ExamsVedHistoryMarkId",
                         new Dictionary<string, object>() { { "@ExamsVedHistoryMarkId", gHistoryMarkId }, { "@MarkValue", iMark } });
-                        
                     }
                 }
                 catch (Exception ex)

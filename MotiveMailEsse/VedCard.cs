@@ -187,8 +187,9 @@ left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId a
             else if (IsPhilosophyEssay)
             {
                 string query = @"
-SELECT ExamsVedId, PersonId, FIO as 'Фамилия', 
-Marks.MarkValue as 'Оценка за эссе по философии' 
+SELECT ExamsVedId, PersonId, 
+" + (isLoad ? "FIO as 'Фамилия'" : "[PersonVedNumber] as 'Рег.номер'") + @"
+, Marks.MarkValue as 'Оценка за эссе по философии' 
 FROM ed.ExamsVedHistory History 
 join ed.extPerson on extPerson.Id = History.PersonId
 left join ed.ExamsVedHistoryMark Marks on History.Id = Marks.ExamsVedHistoryId and Marks.ExamsVedMarkTypeId=6 "

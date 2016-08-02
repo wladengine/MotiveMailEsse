@@ -38,7 +38,7 @@ extExamsVed.Id as ExamsVedId
 , extExamsVed.Date as 'Дата экзамена'
 , extExamsVed.ExamName as 'Экзамен'
 , History.PersonId as PersonId
-, case when (extExamsVed.isLoad = 1) then convert(nvarchar(100),extPerson.FIO) else PersonVedNumber end as 'Абитуриент'
+, case when (extExamsVed.isLoad = 1) then convert(nvarchar(100),extPerson.FIO) else convert(nvarchar(100),PersonVedNumber) end as 'Абитуриент'
 , Details.MarkValue as 'Оценка'
 , convert(bit, (case when (select convert(bit, case when (IsMain=1) then 1 else 0 end) from ed.ExaminerInExamsVed where extExamsVed.Id = ExaminerInExamsVed.ExamsVedId and ExaminerInExamsVed.ExaminerAccount like '%" + Util.GetUserNameRectorat() + @"%') 
 is null then 0 else 1 end))
