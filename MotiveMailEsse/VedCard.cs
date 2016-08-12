@@ -125,7 +125,7 @@ SELECT ExamsVedId
 , PersonId
 , " + (isLoad ? "FIO as 'Фамилия'" : "[PersonVedNumber] as 'Рег.номер'") + @"
 " + (IsPortfolioAnonymPartMotivLetter ? @" , Marks.MarkValue as 'Оценка за м.письмо' " : "")
- + (IsPortfolioAnonymPartEssay ? @", Marks.MarkValue as 'Оценка за эссе' " : "") + @"
+ + (IsPortfolioAnonymPartEssay ? @", Marks2.MarkValue as 'Оценка за эссе' " : "") + @"
 FROM ed.ExamsVedHistory History
 join ed.extPerson on extPerson.Id = History.PersonId "
 
@@ -320,19 +320,31 @@ left join ed.ExamsVedMarkDetails Details on Details.ExamsVedHistoryMarkId = Mark
         {
             if (IsPortfolioAnonymPartMotivLetter || IsPortfolioAnonymPartEssay)
             {
-                if (e.RowIndex < 0 || (e.ColumnIndex != dgvVedPersonList.Columns["MotiveMail"].Index && e.ColumnIndex != dgvVedPersonList.Columns["Essay"].Index))
+                if (e.RowIndex < 0 || (dgvVedPersonList.Columns.Contains("MotiveMail") && e.ColumnIndex != dgvVedPersonList.Columns["MotiveMail"].Index)
+                    && (dgvVedPersonList.Columns.Contains("Essay") && e.ColumnIndex != dgvVedPersonList.Columns["Essay"].Index))
                     return;
                 else
                 {
                     int row = this.dgvVedPersonList.CurrentCell.RowIndex;
                     Guid id = (Guid)dgvVedPersonList.Rows[row].Cells["PersonId"].Value;
-                    
+
                     CardType ctype = CardType.Uknown;
-                    if (e.ColumnIndex == dgvVedPersonList.Columns["MotiveMail"].Index)
-                        ctype = CardType.Motivation; 
-                    if (e.ColumnIndex == dgvVedPersonList.Columns["Essay"].Index)
-                        ctype = CardType.Essay; 
-                    Util.OpenExamMarkCard(this, id, _VedId, ctype, row, isMain, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
+                    if (dgvVedPersonList.Columns.Contains("MotiveMail"))
+                    {
+                        if (e.ColumnIndex == dgvVedPersonList.Columns["MotiveMail"].Index)
+                        {
+                            ctype = CardType.Motivation;
+                            Util.OpenExamMarkCard(this, id, _VedId, ctype, row, isMain, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
+                        }
+                    }
+                    {
+                        if (dgvVedPersonList.Columns.Contains("Essay"))
+                            if (e.ColumnIndex == dgvVedPersonList.Columns["Essay"].Index)
+                            {
+                                ctype = CardType.Essay;
+                                Util.OpenExamMarkCard(this, id, _VedId, ctype, row, isMain, new UpdateHandler(FillGrid), new OpenHandler(OpenNextCard), new OpenHandler(OpenPrevCard));
+                            }
+                    }
                 }
             }
             else if (IsPortfolioCommonPart)
