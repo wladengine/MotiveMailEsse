@@ -459,7 +459,7 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
                     int row = this.dgvAbitFiles.CurrentCell.RowIndex;
                     Guid id = (Guid)dgvAbitFiles.Rows[row].Cells["Id"].Value;
 
-                    string query = "SELECT FileData FROM extAbitFiles_All WHERE Id=@Id";
+                    string query = "SELECT FileData FROM FileStorage WHERE Id=@Id";
 
                     string filename = dgvAbitFiles.Rows[e.RowIndex].Cells["Название файла"].Value.ToString();
 

@@ -159,7 +159,7 @@ namespace MotiveMailEssay
 
             string orderby = " ORDER BY extExamsVed.Number";
             DataTable tbl = Util.BDC.GetDataTable(query + filter + orderby, dic);
-            if (tbl.Rows.Count > 0)
+            if (tbl.Rows.Count >= 0)
             {
                 dgvVedList.DataSource = tbl;
                 dgvVedList.Columns["ExamsVedId"].Visible = false;
