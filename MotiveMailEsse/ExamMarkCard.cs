@@ -293,42 +293,12 @@ where ExamsVedMarkDetails.Id = @gDetailsId";
             // поиск мотивационного письма
             if (_type == CardType.Motivation)
             {
-                filters += "and ( FileName LIKE '%мотив%' OR FileName LIKE '%motiv%' OR Comment LIKE '%мотив%' OR Comment LIKE '%motiv%' )";
+                filters += @" and IsMotivMail = 1 ";
             }
             // поиск эссе
             else if (_type == CardType.Essay)
             {
-                filters +=
-                @"
-                       and (
-                          (FileName LIKE '%esse%' AND FileName NOT LIKE '%compressed%' AND Comment NOT LIKE '%compressed%') OR
-                          FileName LIKE '%essay%' OR
-                          (Comment LIKE '%esse%' AND FileName NOT LIKE '%compressed%' AND Comment NOT LIKE '%compressed%') OR
-                          Comment LIKE '%essay%' OR
-                          FileName LIKE '%эсс%' OR
-                          FileName LIKE '%эсе%' OR
-                          Comment LIKE '%эсс%' OR
-                          Comment LIKE '%эсе%' OR
-                          FileName LIKE '%эсэ%' OR
-                          Comment LIKE '%эсэ%'
-                          ";
-                if (_faculty == "21")
-                {
-                    filters +=
-                        @" OR
-                        FileName LIKE '%proek%' OR FileName LIKE '%proje%' OR FileName LIKE '%proe%' OR
-                        FileName LIKE '%курат%прое%' OR FileName LIKE '%kurat%pr%' OR FileName LIKE '%kurators%' OR
-                        FileName LIKE '%сurat%pr%' OR FileName LIKE '%сurators%' OR
-                        FileName LIKE '%реценз%' OR FileName LIKE '%recenz%' OR FileName LIKE '%retsenz%' OR  FileName LIKE '%rezens%' OR 
-                        FileName LIKE '%выстав%' OR FileName LIKE '%vystav%' OR 
-                        Comment LIKE '%proek%' OR Comment LIKE '%proje%' OR Comment LIKE '%proe%' OR
-                        Comment LIKE '%курат%прое%' OR Comment LIKE '%kurat%pr%' OR Comment LIKE '%kurators%' OR
-                        Comment LIKE '%реценз%' OR Comment LIKE '%recenz%' OR Comment LIKE '%retsenz%' OR  Comment LIKE '%rezens%' OR 
-                        Comment LIKE '%выстав%' OR Comment LIKE '%vystav%'  
-                        )";
-                }
-                else
-                    filters += ") ";
+                filters += @" and IsEssay = 1 ";
             }
             else if (_type == CardType.Portfolio)
             {
@@ -348,49 +318,12 @@ LEFT JOIN Entry ON Entry.Id = Application.EntryId OR Entry.Id = Application_LOG.
 Person ON Person.Id = qFiles.PersonId 
 left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId 
 ";
-                filters +=
-                    @"
-                       and NOT (
-                          (FileName LIKE '%esse%' AND FileName NOT LIKE '%compressed%' AND Comment NOT LIKE '%compressed%') OR
-                          FileName LIKE '%essay%' OR
-                          (Comment LIKE '%esse%' AND FileName NOT LIKE '%compressed%' AND Comment NOT LIKE '%compressed%') OR
-                          Comment LIKE '%essay%' OR
-                          FileName LIKE '%эсс%' OR
-                          FileName LIKE '%эсе%' OR
-                          Comment LIKE '%эсс%' OR
-                          Comment LIKE '%эсе%' OR
-                          FileName LIKE '%эсэ%' OR
-                          Comment LIKE '%эсэ%'
-                          ";
-                if (_faculty == "21")
-                {
-                    filters +=
-                        @" OR
-                        FileName LIKE '%proek%' OR FileName LIKE '%proje%' OR FileName LIKE '%proe%' OR
-                        FileName LIKE '%курат%прое%' OR FileName LIKE '%kurat%pr%' OR FileName LIKE '%kurators%' OR
-                        FileName LIKE '%сurat%pr%' OR FileName LIKE '%сurators%' OR
-                        FileName LIKE '%реценз%' OR FileName LIKE '%recenz%' OR FileName LIKE '%retsenz%' OR  FileName LIKE '%rezens%' OR 
-                        FileName LIKE '%выстав%' OR FileName LIKE '%vystav%' OR 
-                        Comment LIKE '%proek%' OR Comment LIKE '%proje%' OR Comment LIKE '%proe%' OR
-                        Comment LIKE '%курат%прое%' OR Comment LIKE '%kurat%pr%' OR Comment LIKE '%kurators%' OR
-                        Comment LIKE '%реценз%' OR Comment LIKE '%recenz%' OR Comment LIKE '%retsenz%' OR  Comment LIKE '%rezens%' OR 
-                        Comment LIKE '%выстав%' OR Comment LIKE '%vystav%'  
-                        )";
-                }
-                else
-                    filters += ") ";
-                filters += "and NOT ( FileName LIKE '%мотив%' OR FileName LIKE '%motiv%' OR Comment LIKE '%мотив%' OR Comment LIKE '%motiv%' )";
+                filters +=  @" and IsPortfolioPart2 = 1 ";
 
             }
             else if (_type == CardType.PhilosophyEssay)
             {
-                filters +=
-@" and (
-                           FileName LIKE '%phil_essay%' OR
-                          Comment LIKE '%философ%' 
-                          ";
-                 
-                filters += ") ";
+                filters += @" and (  FileName LIKE '%phil_essay%' OR Comment LIKE '%философ%' ) ";
             }
             Dictionary<string, object> dic = new Dictionary<string, object>();
 
