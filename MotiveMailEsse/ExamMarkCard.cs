@@ -36,6 +36,8 @@ namespace MotiveMailEssay
         private bool IsVisible = true;
         private bool isMain;
 
+        private bool MarkChanged;
+
         public ExamMarkCard(Guid id, Guid VedId, CardType type, int row, bool _isMain, UpdateHandler _hUp, OpenHandler _hOpNext, OpenHandler _hOpPrev)
         {
             InitializeComponent();
@@ -194,46 +196,70 @@ select " +
             if (!isMain)
             {
                 query = @"select MarkValue, Comment FROM ed.ExamsVedMarkDetails where ExamsVedMarkDetails.Id = @gDetailsId";
-                dic.Add("gDetailsId", gMarkDetailsId);
+                dic.Add("@gDetailsId", gMarkDetailsId);
                 tbl = Util.BDC.GetDataTable(query, dic);
                 if (tbl.Rows.Count != 0)
                 {
                     r = tbl.Rows[0];
                     tbExamMark.Text = r.Field<decimal?>("MarkValue").HasValue ? r.Field<decimal?>("MarkValue").ToString() : "";
+                    MarkChanged = false;
                     tbComment.Text = r.Field<string>("Comment");
                 }
                 else
                 {
                     tbExamMark.Text = "";
+                    MarkChanged = false;
                     tbComment.Text = "";
                 }
                 tbExamMark.ReadOnly = !String.IsNullOrEmpty(tbExamMark.Text);
                 if (isLoad)
+                {
                     tbExamMark.ReadOnly = true;
+                }
             }
             else
             {
                 query = @"select ExamsVedHistoryMark.MarkValue, ExamsVedMarkDetails.Comment FROM ed.ExamsVedHistoryMark 
 join ed.ExamsVedMarkDetails on ExamsVedHistoryMark.Id = ExamsVedMarkDetails.ExamsVedHistoryMarkId
 where ExamsVedMarkDetails.Id = @gDetailsId";
-                dic.Add("gDetailsId", gMarkDetailsId);
+                dic.Add("@gDetailsId", gMarkDetailsId);
                 tbl = Util.BDC.GetDataTable(query, dic);
                 if (tbl.Rows.Count != 0)
                 {
                     r = tbl.Rows[0];
-                    tbExamMark.Text = r.Field<decimal?>("MarkValue").HasValue ? r.Field<decimal?>("MarkValue").ToString() : "";
-                    tbComment.Text = r.Field<string>("Comment");
+                    tbExamMark.Text = r.Field<decimal?>("MarkValue").HasValue ? r.Field<decimal?>("MarkValue").ToString() : ""; MarkChanged = false;
+                    tbComment.Text = r.Field<string>("Comment"); 
+                    
                 }
                 else
                 {
-                    tbExamMark.Text = "";
+                    tbExamMark.Text = ""; MarkChanged = false;
+                    
                     tbComment.Text = "";
                 }
+                
                 tbExamMark.ReadOnly = false;
                 if (isLoad)
                     tbExamMark.ReadOnly = true;
+
+                query = @"select ExamsVedMarkDetails.ExaminerName, ExamsVedMarkDetails.Comment FROM ed.ExamsVedHistoryMark 
+join ed.ExamsVedMarkDetails on ExamsVedHistoryMark.Id = ExamsVedMarkDetails.ExamsVedHistoryMarkId
+where ExamsVedHistoryMark.Id = @gHistoryMarkId 
+";
+                dic.Add("@gHistoryMarkId", gHistoryMarkId);
+                List<string> Comments = new List<string>();
+                tbl = Util.BDC.GetDataTable(query, dic);
+                tbOtherComment.Text = String.Join(@";
+", (from DataRow rw in tbl.Rows
+                                                   where !String.IsNullOrEmpty(rw.Field<string>("Comment"))
+                                                   select rw.Field<string>("ExaminerName") + ": " + rw.Field<string>("Comment")).ToList());
+
+
             }
-            
+            if (isLoad)
+            {
+                tabComment.SelectTab(tabOtherComments);
+            }
 
             query = @"select Barcode FROM ed.Person where Id = @PersonId";
             tbl = Util.BDC.GetDataTable(query, dic);
@@ -596,6 +622,7 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
                 }
                 _handlerUpdate();
                 tbExamMark.ReadOnly = true;
+                MarkChanged = false;
                 return true;
             }
             return false;
@@ -604,7 +631,7 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
         {
             try
             {
-                if (!String.IsNullOrEmpty(tbExamMark.Text) && !tbExamMark.ReadOnly)
+                if (!String.IsNullOrEmpty(tbExamMark.Text) && !tbExamMark.ReadOnly && MarkChanged)
                 {
                     if (DialogResult.Yes == MessageBox.Show("Вы ввели оценку, но не сохранили результат. Сохранить оценку?","Вопрос",MessageBoxButtons.YesNo))
                     {
@@ -639,7 +666,7 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
         {
             try
             {
-                if (!String.IsNullOrEmpty(tbExamMark.Text) && !tbExamMark.ReadOnly)
+                if (!String.IsNullOrEmpty(tbExamMark.Text) && !tbExamMark.ReadOnly && MarkChanged)
                 {
                     if (DialogResult.Yes == MessageBox.Show("Вы ввели оценку, но не сохранили результат. Сохранить оценку?", "Вопрос", MessageBoxButtons.YesNo))
                     {
@@ -708,6 +735,11 @@ left join SP_Faculty on SP_Faculty.Id = Entry.FacultyId
         private void cbEntry_CheckedChanged(object sender, EventArgs e)
         {
             FillCard(_Barcode);
+        }
+
+        private void tbExamMark_TextChanged(object sender, EventArgs e)
+        {
+            MarkChanged = true;
         }
     }
 }

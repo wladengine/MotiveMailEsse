@@ -43,8 +43,15 @@
             this.cbEntry = new System.Windows.Forms.CheckBox();
             this.tbComment = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.tabComment = new System.Windows.Forms.TabControl();
+            this.tabOwnComment = new System.Windows.Forms.TabPage();
+            this.tabOtherComments = new System.Windows.Forms.TabPage();
+            this.tbOtherComment = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAbitFiles)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.epErrorInput)).BeginInit();
+            this.tabComment.SuspendLayout();
+            this.tabOwnComment.SuspendLayout();
+            this.tabOtherComments.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -64,11 +71,12 @@
             this.tbExamMark.Name = "tbExamMark";
             this.tbExamMark.Size = new System.Drawing.Size(100, 20);
             this.tbExamMark.TabIndex = 1;
+            this.tbExamMark.TextChanged += new System.EventHandler(this.tbExamMark_TextChanged);
             // 
             // btnSave
             // 
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnSave.Location = new System.Drawing.Point(13, 499);
+            this.btnSave.Location = new System.Drawing.Point(13, 551);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 2;
@@ -112,7 +120,7 @@
             // btnNext
             // 
             this.btnNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnNext.Location = new System.Drawing.Point(738, 499);
+            this.btnNext.Location = new System.Drawing.Point(738, 551);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(114, 23);
             this.btnNext.TabIndex = 6;
@@ -123,7 +131,7 @@
             // btnPrev
             // 
             this.btnPrev.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPrev.Location = new System.Drawing.Point(618, 499);
+            this.btnPrev.Location = new System.Drawing.Point(618, 551);
             this.btnPrev.Name = "btnPrev";
             this.btnPrev.Size = new System.Drawing.Size(114, 23);
             this.btnPrev.TabIndex = 7;
@@ -169,37 +177,81 @@
             // 
             // tbComment
             // 
-            this.tbComment.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.tbComment.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbComment.Location = new System.Drawing.Point(12, 435);
+            this.tbComment.Location = new System.Drawing.Point(9, 28);
             this.tbComment.Multiline = true;
             this.tbComment.Name = "tbComment";
-            this.tbComment.Size = new System.Drawing.Size(839, 58);
+            this.tbComment.Size = new System.Drawing.Size(816, 62);
             this.tbComment.TabIndex = 11;
             // 
             // label4
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(10, 419);
+            this.label4.Location = new System.Drawing.Point(6, 12);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(127, 13);
             this.label4.TabIndex = 4;
             this.label4.Text = "Комментарий к работе:";
             // 
+            // tabComment
+            // 
+            this.tabComment.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabComment.Controls.Add(this.tabOwnComment);
+            this.tabComment.Controls.Add(this.tabOtherComments);
+            this.tabComment.Location = new System.Drawing.Point(12, 415);
+            this.tabComment.Name = "tabComment";
+            this.tabComment.SelectedIndex = 0;
+            this.tabComment.Size = new System.Drawing.Size(839, 130);
+            this.tabComment.TabIndex = 12;
+            // 
+            // tabOwnComment
+            // 
+            this.tabOwnComment.Controls.Add(this.tbComment);
+            this.tabOwnComment.Controls.Add(this.label4);
+            this.tabOwnComment.Location = new System.Drawing.Point(4, 22);
+            this.tabOwnComment.Name = "tabOwnComment";
+            this.tabOwnComment.Padding = new System.Windows.Forms.Padding(3);
+            this.tabOwnComment.Size = new System.Drawing.Size(831, 104);
+            this.tabOwnComment.TabIndex = 0;
+            this.tabOwnComment.Text = "Оставить комментарий";
+            this.tabOwnComment.UseVisualStyleBackColor = true;
+            // 
+            // tabOtherComments
+            // 
+            this.tabOtherComments.Controls.Add(this.tbOtherComment);
+            this.tabOtherComments.Location = new System.Drawing.Point(4, 22);
+            this.tabOtherComments.Name = "tabOtherComments";
+            this.tabOtherComments.Padding = new System.Windows.Forms.Padding(3);
+            this.tabOtherComments.Size = new System.Drawing.Size(831, 104);
+            this.tabOtherComments.TabIndex = 1;
+            this.tabOtherComments.Text = "Прочие комментарии";
+            this.tabOtherComments.UseVisualStyleBackColor = true;
+            // 
+            // tbOtherComment
+            // 
+            this.tbOtherComment.Location = new System.Drawing.Point(6, 6);
+            this.tbOtherComment.Multiline = true;
+            this.tbOtherComment.Name = "tbOtherComment";
+            this.tbOtherComment.ReadOnly = true;
+            this.tbOtherComment.Size = new System.Drawing.Size(819, 92);
+            this.tbOtherComment.TabIndex = 0;
+            // 
             // ExamMarkCard
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(864, 534);
-            this.Controls.Add(this.tbComment);
+            this.ClientSize = new System.Drawing.Size(864, 586);
+            this.Controls.Add(this.tabComment);
             this.Controls.Add(this.cbEntry);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.cbFaculty);
             this.Controls.Add(this.btnPrev);
             this.Controls.Add(this.btnNext);
             this.Controls.Add(this.lbPersonNumber);
-            this.Controls.Add(this.label4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.dgvAbitFiles);
             this.Controls.Add(this.btnSave);
@@ -209,6 +261,11 @@
             this.Text = "ExamMarkCard";
             ((System.ComponentModel.ISupportInitialize)(this.dgvAbitFiles)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.epErrorInput)).EndInit();
+            this.tabComment.ResumeLayout(false);
+            this.tabOwnComment.ResumeLayout(false);
+            this.tabOwnComment.PerformLayout();
+            this.tabOtherComments.ResumeLayout(false);
+            this.tabOtherComments.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -230,5 +287,9 @@
         private System.Windows.Forms.CheckBox cbEntry;
         private System.Windows.Forms.TextBox tbComment;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TabControl tabComment;
+        private System.Windows.Forms.TabPage tabOwnComment;
+        private System.Windows.Forms.TabPage tabOtherComments;
+        private System.Windows.Forms.TextBox tbOtherComment;
     }
 }
